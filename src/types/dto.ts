@@ -1,4 +1,10 @@
-import type { VerificationStatus } from "@prisma/client";
+import type {
+  BookingStatus,
+  DisputeStatus,
+  PaymentMethod,
+  PaymentStatus,
+  VerificationStatus,
+} from "@prisma/client";
 
 /**
  * Serializable DTOs returned from RSC queries to client components. Prisma
@@ -46,4 +52,35 @@ export interface PendingProviderDTO {
   categoryName: string | null;
   createdAt: string; // ISO
   documentCount: number;
+}
+
+export interface PaymentDTO {
+  transactionNumber: string;
+  amount: number;
+  status: PaymentStatus;
+  method: PaymentMethod;
+  paidAt: string | null;
+}
+
+export interface BookingListItemDTO {
+  id: string;
+  status: BookingStatus;
+  scheduledAt: string;
+  address: string;
+  totalAmount: number;
+  serviceTitle: string;
+  providerName: string | null;
+  customerName: string | null;
+  createdAt: string;
+}
+
+export interface BookingDetailDTO extends BookingListItemDTO {
+  notes: string | null;
+  providerId: string; // ProviderProfile id
+  providerUserId: string;
+  customerId: string;
+  serviceId: string;
+  payment: PaymentDTO | null;
+  hasReview: boolean;
+  disputeStatus: DisputeStatus | null;
 }
