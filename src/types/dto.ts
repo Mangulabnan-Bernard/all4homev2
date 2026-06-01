@@ -1,0 +1,49 @@
+import type { VerificationStatus } from "@prisma/client";
+
+/**
+ * Serializable DTOs returned from RSC queries to client components. Prisma
+ * Decimals are converted to numbers (Decimals can't cross the RSC boundary) and
+ * Dates to ISO strings.
+ */
+
+export interface ServiceDTO {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  durationMin: number;
+  categoryId: string;
+  isActive: boolean;
+}
+
+export interface ProviderCardDTO {
+  id: string; // ProviderProfile id
+  userId: string;
+  name: string | null;
+  image: string | null;
+  bio: string | null;
+  categoryName: string | null;
+  categorySlug: string | null;
+  hourlyRate: number;
+  averageRating: number;
+  reviewCount: number;
+  experienceYears: number;
+  fromPrice: number; // cheapest active service, else hourly rate
+}
+
+export interface ProviderDetailDTO extends ProviderCardDTO {
+  description: string | null;
+  serviceRadiusKm: number;
+  verificationStatus: VerificationStatus;
+  services: ServiceDTO[];
+}
+
+export interface PendingProviderDTO {
+  id: string;
+  userId: string;
+  name: string | null;
+  email: string;
+  categoryName: string | null;
+  createdAt: string; // ISO
+  documentCount: number;
+}
