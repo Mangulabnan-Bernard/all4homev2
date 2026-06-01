@@ -1,9 +1,11 @@
 import type {
+  AuditAction,
   BookingStatus,
   DisputeStatus,
   NotificationType,
   PaymentMethod,
   PaymentStatus,
+  UserRole,
   VerificationStatus,
 } from "@prisma/client";
 
@@ -130,4 +132,43 @@ export interface NotificationDTO {
   link: string | null;
   read: boolean;
   createdAt: string;
+}
+
+export interface AdminUserDTO {
+  id: string;
+  name: string | null;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  isVerified: boolean;
+  createdAt: string;
+}
+
+export interface AdminPaymentDTO {
+  id: string;
+  transactionNumber: string;
+  amount: number;
+  status: PaymentStatus;
+  method: PaymentMethod;
+  bookingId: string;
+  customerName: string | null;
+  createdAt: string;
+}
+
+export interface AuditLogDTO {
+  id: string;
+  action: AuditAction;
+  entity: string;
+  entityId: string;
+  actorName: string | null;
+  createdAt: string;
+}
+
+export interface AnalyticsDTO {
+  totalUsers: number;
+  totalProviders: number;
+  pendingProviders: number;
+  totalBookings: number;
+  totalRevenue: number;
+  bookingsByStatus: { status: BookingStatus; count: number }[];
 }
