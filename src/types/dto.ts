@@ -1,6 +1,7 @@
 import type {
   BookingStatus,
   DisputeStatus,
+  NotificationType,
   PaymentMethod,
   PaymentStatus,
   VerificationStatus,
@@ -83,4 +84,50 @@ export interface BookingDetailDTO extends BookingListItemDTO {
   payment: PaymentDTO | null;
   hasReview: boolean;
   disputeStatus: DisputeStatus | null;
+}
+
+export interface ReviewDTO {
+  id: string;
+  rating: number;
+  comment: string | null;
+  authorName: string | null;
+  bookingId: string;
+  createdAt: string;
+}
+
+export interface AdminDisputeDTO {
+  id: string;
+  status: DisputeStatus;
+  reason: string;
+  resolution: string | null;
+  bookingId: string;
+  raisedByName: string | null;
+  createdAt: string;
+}
+
+export interface ConversationDTO {
+  id: string;
+  otherUserId: string;
+  otherName: string | null;
+  otherImage: string | null;
+  lastMessageAt: string;
+  unreadCount: number;
+}
+
+export interface MessageDTO {
+  id: string;
+  senderId: string;
+  content: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface NotificationDTO {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link: string | null;
+  read: boolean;
+  createdAt: string;
 }
