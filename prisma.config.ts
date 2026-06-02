@@ -1,4 +1,4 @@
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
 
 // Prisma 7 moved the connection URL out of schema.prisma. The CLI does not
 // auto-load .env when a config file is present, so we load it ourselves using
@@ -15,6 +15,11 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: env("DATABASE_URL"),
+    // Read directly rather than the strict `env()` helper: `prisma generate`
+    // runs on install/build and loads this config but does NOT connect, so it
+    // must not hard-fail when DATABASE_URL is absent. `prisma migrate` and the
+    // runtime client still require a real URL — set it in the host env (Vercel)
+    // or local .env (loaded by process.loadEnvFile() above).
+    url: process.env.DATABASE_URL ?? "",
   },
 });
