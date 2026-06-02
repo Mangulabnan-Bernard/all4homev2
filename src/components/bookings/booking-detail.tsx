@@ -7,6 +7,7 @@ import type { BookingDetailDTO } from "@/types/dto";
 import { BOOKING_STATUS_META, PAYMENT_STATUS_META } from "@/constants";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ReviewForm } from "@/components/reviews/review-form";
 import { BookingActions } from "./booking-actions";
 
 const METHOD_LABEL: Record<string, string> = {
@@ -100,6 +101,12 @@ export function BookingDetail({
           it.
         </div>
       )}
+
+      {role === "CUSTOMER" &&
+        !booking.hasReview &&
+        (booking.status === "CONFIRMED" || booking.status === "CLOSED") && (
+          <ReviewForm bookingId={booking.id} />
+        )}
 
       <BookingActions bookingId={booking.id} status={booking.status} role={role} />
     </div>
