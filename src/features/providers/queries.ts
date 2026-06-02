@@ -213,3 +213,91 @@ export async function getMyDocuments(
     createdAt: d.createdAt.toISOString(),
   }));
 }
+
+/** Resolve a service to its provider for the booking form (active + approved only). */
+export async function getServiceForBooking(serviceId: string): Promise<{
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  durationMin: number;
+  providerId: string; // ProviderProfile id
+  providerName: string | null;
+} | null> {
+  const s = await prisma.service.findFirst({
+    where: {
+      id: serviceId,
+      isActive: true,
+      provider: { verificationStatus: "APPROVED", user: { isActive: true } },
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      price: true,
+      durationMin: true,
+      provider: { select: { id: true, user: { select: { name: true } } } },
+    },
+  });
+  if (!s) return null;
+  return {
+    id: s.id,
+    title: s.title,
+    description: s.description,
+    price: decimalToNumber(s.price),
+    durationMin: s.durationMin,
+    providerId: s.provider.id,
+    providerName: s.provider.user.name,
+  };
+}
+
+/** Provider User ids the customer has favorited (for heart state). */
+export async function getFavoriteProviderIds(userId: string): Promise<string[]> {
+  const favs = await prisma.favoriteProvider.findMany({
+    where: { userId },
+    select: { providerId: true },
+  });
+  return favs.map((f) => f.providerId);
+}
+
+/** The customer's favorited providers as cards (approved + active only, favorite order). */
+export async function getFavoriteProviders(userId: string): Promise<ProviderCardDTO[]> {
+  const favs = await prisma.favoriteProvider.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    select: { providerId: true },
+  });
+  const ids = favs.map((f) => f.providerId);
+  if (ids.length === 0) return [];
+
+  const rows = await prisma.providerProfile.findMany({
+    where: { userId: { in: ids }, verificationStatus: "APPROVED", user: { isActive: true } },
+    include: {
+      user: { select: { name: true, image: true } },
+      category: { select: { name: true, slug: true } },
+      services: { where: { isActive: true }, select: { price: true }, orderBy: { price: "asc" }, take: 1 },
+    },
+  });
+
+  const order = new Map(ids.map((id, i) => [id, i]));
+  rows.sort((a, b) => (order.get(a.userId) ?? 0) - (order.get(b.userId) ?? 0));
+
+  return rows.map((p) => {
+    const hourly = decimalToNumber(p.hourlyRate);
+    const cheapest = p.services[0]?.price;
+    return {
+      id: p.id,
+      userId: p.userId,
+      name: p.user.name,
+      image: p.user.image,
+      bio: p.bio,
+      categoryName: p.category?.name ?? null,
+      categorySlug: p.category?.slug ?? null,
+      hourlyRate: hourly,
+      averageRating: p.averageRating,
+      reviewCount: p.reviewCount,
+      experienceYears: p.experienceYears,
+      fromPrice: cheapest != null ? decimalToNumber(cheapest) : hourly,
+    };
+  });
+}
