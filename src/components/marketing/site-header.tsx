@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, X } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/constants";
@@ -18,7 +19,11 @@ const SERVICE_GROUPS = groupedServices();
 
 const MOBILE_DRAWER_ID = "mobile-nav-drawer";
 
-export function SiteHeader() {
+export function SiteHeader({
+  user,
+}: {
+  user: { name: string | null; dashboardHref: string } | null;
+}) {
   const [servicesOpen, setServicesOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -148,12 +153,35 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Link href={ROUTES.login} className={cn(buttonVariants({ variant: "ghost" }))}>
-            Sign in
-          </Link>
-          <Link href={ROUTES.register} className={cn(buttonVariants())}>
-            Get started
-          </Link>
+          {user ? (
+            <>
+              {user.name && (
+                <span className="hidden text-sm text-[var(--muted-foreground)] lg:inline">
+                  Hi, {user.name.split(" ")[0]}
+                </span>
+              )}
+              <Link href={user.dashboardHref} className={cn(buttonVariants({ variant: "ghost" }))}>
+                Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: ROUTES.home })}
+                className={cn(buttonVariants({ variant: "outline" }))}
+              >
+                <LogOut className="size-4" />
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href={ROUTES.login} className={cn(buttonVariants({ variant: "ghost" }))}>
+                Sign in
+              </Link>
+              <Link href={ROUTES.register} className={cn(buttonVariants())}>
+                Get started
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -223,15 +251,36 @@ export function SiteHeader() {
               ))}
             </div>
             <div className="flex gap-2 pt-2">
-              <Link
-                href={ROUTES.login}
-                className={cn(buttonVariants({ variant: "outline" }), "flex-1")}
-              >
-                Sign in
-              </Link>
-              <Link href={ROUTES.register} className={cn(buttonVariants(), "flex-1")}>
-                Get started
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    href={user.dashboardHref}
+                    className={cn(buttonVariants(), "flex-1")}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => signOut({ callbackUrl: ROUTES.home })}
+                    className={cn(buttonVariants({ variant: "outline" }), "flex-1")}
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={ROUTES.login}
+                    className={cn(buttonVariants({ variant: "outline" }), "flex-1")}
+                  >
+                    Sign in
+                  </Link>
+                  <Link href={ROUTES.register} className={cn(buttonVariants(), "flex-1")}>
+                    Get started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
