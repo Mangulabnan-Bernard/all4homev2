@@ -50,3 +50,13 @@ export async function getReviewForBooking(bookingId: string): Promise<ReviewDTO 
   if (!row) return null;
   return toReviewDTO(row);
 }
+
+/** All reviews (newest first, capped) for the admin moderation view. */
+export async function getAllReviews(): Promise<ReviewDTO[]> {
+  const rows = await prisma.review.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 100,
+    include: { author: { select: { name: true } } },
+  });
+  return rows.map(toReviewDTO);
+}
