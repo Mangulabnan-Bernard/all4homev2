@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
 import bcrypt from "bcryptjs";
 
 /**
@@ -8,9 +10,10 @@ import bcrypt from "bcryptjs";
  * must flow through the real actions so the lifecycle + TRX generator are
  * exercised. Default passwords are for local dev only.
  */
+neonConfig.webSocketConstructor = ws as unknown as typeof neonConfig.webSocketConstructor;
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL is not set");
-const prisma = new PrismaClient({ adapter: new PrismaMariaDb(url) });
+const prisma = new PrismaClient({ adapter: new PrismaNeon({ connectionString: url }) });
 
 const CATEGORIES = [
   { slug: "cleaning", name: "Home Cleaning", icon: "Sparkles" },

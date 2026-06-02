@@ -1,6 +1,6 @@
 // ============================================================================
 // All4Home V2 — Prisma Schema (MASTER, reconciled — see docs/MASTER_PLAN.md §2)
-// Datasource: MySQL | ORM: Prisma 7 | Auth: Auth.js / NextAuth v5
+// Datasource: PostgreSQL (Neon) | ORM: Prisma 7 | Auth: Auth.js / NextAuth v5
 // Conventions: PascalCase singular models, @@map snake_case plural tables,
 //   @map snake_case columns, cuid() ids, explicit @relation onDelete,
 //   @@index on every FK + hot filter column.
@@ -11,7 +11,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 // ----------------------------------------------------------------------------
