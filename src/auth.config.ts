@@ -11,10 +11,26 @@ import type { UserRole } from "@prisma/client";
  */
 const providers: NextAuthConfig["providers"] = [];
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  providers.push(Google({ allowDangerousEmailAccountLinking: false }));
+  providers.push(
+    Google({
+      // Pass creds explicitly: Auth.js v5 otherwise defaults to AUTH_GOOGLE_ID/
+      // AUTH_GOOGLE_SECRET, which don't match the env var names we gate on.
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: false,
+    }),
+  );
 }
 if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
-  providers.push(GitHub({ allowDangerousEmailAccountLinking: false }));
+  providers.push(
+    GitHub({
+      // Pass creds explicitly: Auth.js v5 otherwise reads AUTH_GITHUB_ID/
+      // AUTH_GITHUB_SECRET, so GITHUB_ID alone yields clientId=undefined.
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
+      allowDangerousEmailAccountLinking: false,
+    }),
+  );
 }
 
 export const authConfig = {
