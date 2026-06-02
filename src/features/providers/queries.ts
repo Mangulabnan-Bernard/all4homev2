@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, type DocumentType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { decimalToNumber } from "@/lib/format";
 import type {
@@ -180,5 +180,36 @@ export async function getPendingProviders(): Promise<PendingProviderDTO[]> {
     categoryName: p.category?.name ?? null,
     createdAt: p.createdAt.toISOString(),
     documentCount: p._count.documents,
+  }));
+}
+
+/** The signed-in provider's weekly availability slots. */
+export async function getMyAvailability(
+  userId: string,
+): Promise<{ dayOfWeek: number; startTime: string; endTime: string }[]> {
+  return prisma.providerAvailability.findMany({
+    where: { provider: { userId } },
+    orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
+    select: { dayOfWeek: true, startTime: true, endTime: true },
+  });
+}
+
+/** The signed-in provider's uploaded verification documents. */
+export async function getMyDocuments(
+  userId: string,
+): Promise<
+  { id: string; type: DocumentType; url: string; verified: boolean; createdAt: string }[]
+> {
+  const rows = await prisma.providerDocument.findMany({
+    where: { provider: { userId } },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, type: true, url: true, verified: true, createdAt: true },
+  });
+  return rows.map((d) => ({
+    id: d.id,
+    type: d.type,
+    url: d.url,
+    verified: d.verified,
+    createdAt: d.createdAt.toISOString(),
   }));
 }
