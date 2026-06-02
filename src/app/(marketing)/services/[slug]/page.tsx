@@ -4,9 +4,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Check, Clock, ShieldCheck, Sparkles } from "lucide-react";
 
+import { auth } from "@/auth";
 import { buttonVariants } from "@/components/ui/button";
 import { BookingRequestDialog } from "@/components/marketing/booking-request-dialog";
 import { getService, SERVICES } from "@/constants/services";
+import { ROUTES } from "@/constants";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +42,12 @@ export default async function ServiceDetailPage({
   const { slug } = await params;
   const svc = getService(slug);
   if (!svc) notFound();
+
+  // Booking requires authentication. Read the session from the JWT only (no DB
+  // hit) so this public page stays cheap; the real create-booking action is
+  // separately guarded by requireCan("booking:create").
+  const session = await auth();
+  const isAuthed = Boolean(session?.user);
 
   const Icon = svc.icon;
   const related = SERVICES.filter((s) => s.slug !== svc.slug).slice(0, 3);
@@ -75,7 +83,17 @@ export default async function ServiceDetailPage({
               </div>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <BookingRequestDialog serviceName={svc.name} startingPrice={svc.startingPrice} />
+                {isAuthed ? (
+                  <BookingRequestDialog serviceName={svc.name} startingPrice={svc.startingPrice} />
+                ) : (
+                  <Link
+                    href={`${ROUTES.login}?callbackUrl=${encodeURIComponent(`/services/${svc.slug}`)}`}
+                    className={cn(buttonVariants({ size: "lg" }), "group")}
+                  >
+                    Sign in to book
+                    <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                )}
                 <Link
                   href="/#how-it-works"
                   className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
